@@ -1,0 +1,40 @@
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <param name="plugin-icon">images/pluginIcon.png</param>
+        <param name="plugin-logo">images/pluginLogo.png</param>
+        <application-version min="4.0"/>
+    </plugin-info>
+
+    <gadget key="week-load-gadget" name="Weekly Activity Gadget" location="gadget.xml"/>
+
+    <resource type="download" name="i18n/ALL_ALL.xml" location="i18n/ALL_ALL.xml">
+        <param name="content-type" value="text/xml; charset=UTF-8"/>
+    </resource>
+
+    <resource type="i18n" name="i18n" location="i18n/gadget"/>
+    <resource type="download" name="images/" location="/images"/>
+    <resource type="download" name="thumbnail.png" location="/images/thumbnail.png"/>
+
+    <rest key="rest-resources" path="/week-load-gadget" version="1.0">
+        <description>Provides the REST resources for the gadget</description>
+    </rest>
+
+    <web-resource key="resources" name="resources">
+        <transformation extension="soy">
+            <transformer key="soyTransformer"/>
+        </transformation>
+        <transformation extension="js">
+            <transformer key="jsI18n"/>
+        </transformation>
+
+        <resource type="i18n"     name="i18n"          location="/i18n/gadget"/>
+        <!-- resource type="download" name="gadget.js"     location="/js/gadget.js"/ -->
+        <resource type="download" name="gadget.css"    location="/css/gadget.css"/>
+        <resource type="download" name="gadget.soy.js" location="/templates/gadget.soy"/>
+
+        <context>timesheet-report</context>
+    </web-resource>
+</atlassian-plugin>

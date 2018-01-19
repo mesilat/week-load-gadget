@@ -1,0 +1,130 @@
+{namespace Mesilat.TimeSheet.Templates}
+
+/**
+ * TimeSheet Week Report Template
+ * @param week
+ * @param weeks
+ * @param days
+ * @param period
+ * @param user
+ * @param display
+ * @param issues
+ * @param total
+ * @param baseUrl
+ */
+{template .week}
+<div class="com-mesilat-main">
+<p>
+<table class="week-load-gadget-navigator">
+<tr>
+    {foreach $w in keys($weeks)}
+    <td {if $w == $week}class="week-load-gadget-selected"{/if} data:week="{$w}"><a href="#">{$weeks[$w]}</a></td>
+    {/foreach}
+</tr>
+</table>
+</p>
+<p>
+    <h2>{$display}: {$period}</h2>
+</p>
+<p>
+<table class="week-load-gadget" data:week="{$week}" data:user="{$user.name}">
+<thead>
+    <tr>
+        <th rowspan="2">{getText('com.mesilat.week-load-gadget.pkey')}</th>
+        <th rowspan="2" style="width:100%">{getText('com.mesilat.week-load-gadget.summary')}</th>
+        {foreach $day in $days}
+            <th>{$day.dayName}</th>
+        {/foreach}
+        <th rowspan="2">{getText('com.mesilat.week-load-gadget.logged')}</th>
+    </tr>
+    <tr>
+        {foreach $day in $days}
+            <th>{$day.date}</th>
+        {/foreach}
+    </tr>
+</thead>
+<tbody>
+    {call .data}
+        {param issues:  $issues/}
+        {param days:    $days/}
+        {param baseUrl: $baseUrl/}
+    {/call}
+</tbody>
+<tfoot>
+    <tr>
+        <td>&nbsp;</td>
+        <td style="width:100%">{getText('com.mesilat.week-load-gadget.daytotal')}</td>
+        {foreach $day in $days}
+            <td class="week-load-gadget-total"><div>
+            {if $total[$day.day]}
+                {$total[$day.day]|noAutoescape}
+            {else}
+                &nbsp;
+            {/if}
+            </div></td>
+        {/foreach}
+        <td>{$total[0]}</td>
+    </tr>
+</tfoot>
+</table>
+</p>
+</div>
+{/template}
+
+
+/**
+ * TimeSheet Week Report Data Template
+ * @param issues
+ * @param days
+ * @param baseUrl
+ */
+{template .data}
+{foreach $key in keys($issues)}
+    {call .rec}
+        {param rec:     $issues[$key]/}
+        {param days:    $days/}
+        {param baseUrl: $baseUrl/}
+    {/call}
+{/foreach}
+{/template}
+
+
+/**
+ * TimeSheet Week Report Record Template
+ * @param rec
+ * @param days
+ * @param baseUrl
+ */
+{template .rec}
+<tr>
+    <td class="week-load-gadget-code{if $rec.resolved} week-load-gadget-resolved{/if}" nowrap>
+        <div><a target="_blank" href="{$baseUrl}/browse/{$rec.issuekey}">{$rec.issuekey}</a></div>
+    </td>
+    <td class="week-load-gadget-name">
+        <div>{$rec.summary}</div>
+    </td>
+    {foreach $day in $days}
+        {call .day}
+            {param rec: $rec/}
+            {param day: $day/}
+        {/call}
+    {/foreach}
+    {if $rec.total}
+        <td class="week-load-gadget-total"><div>{$rec.total|noAutoescape}</div></td>
+    {else}
+        <td class="week-load-gadget-total"><div>&nbsp;</div></td>
+    {/if}
+</tr>
+{/template}
+
+
+/**
+ * TimeSheet Week Report Day Template
+ * @param rec
+ * @param day
+ */
+{template .day}
+<td class="week-load-gadget-day" data-rec="{$rec.id}" data-day="{$day.day}">
+    <div>&nbsp;</div>
+</td>
+{/template}

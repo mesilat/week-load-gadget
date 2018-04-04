@@ -11,6 +11,7 @@
  * @param issues
  * @param total
  * @param baseUrl
+ * @param isLicensed
  */
 {template .week}
 <div class="com-mesilat-main">
@@ -18,8 +19,17 @@
 <table class="week-load-gadget-navigator">
 <tr>
     {foreach $w in keys($weeks)}
-    <td {if $w == $week}class="week-load-gadget-selected"{/if} data:week="{$w}"><a href="#">{$weeks[$w]}</a></td>
+        <td {if $w == $week}class="week-load-gadget-selected"{/if} data:week="{$w}">
+            <a href="#">{$weeks[$w]}</a>
+        </td>
     {/foreach}
+    {if $isLicensed}
+        <td>
+            <a class="com-mesilat-week-load-gadget-report" href="#">
+                <span class="aui-icon aui-icon-small aui-iconfont-calendar">{getText('com.mesilat.week-load-gadget.period')}</span>
+            </a>
+        </td>
+    {/if}
 </tr>
 </table>
 </p>
@@ -124,7 +134,7 @@
  * @param day
  */
 {template .day}
-<td class="week-load-gadget-day" data-rec="{$rec.id}" data-day="{$day.day}">
+<td class="week-load-gadget-day" data-rec="{$rec.id}" data-day="{$day.day}" data-date="{$day.date}">
     <div>&nbsp;</div>
 </td>
 {/template}

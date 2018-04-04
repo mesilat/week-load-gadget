@@ -1,0 +1,13 @@
+#controlHeader ($action $customField.id $customField.name $fieldLayoutItem.required $displayParameters.noHeader)
+<input type="checkbox" name="$customField.id" value="true"
+#if($value && $value.equals("true"))
+ checked 
+#end
+#if ($jiraUserUtils.getGroupNamesForUser($authcontext.loggedInUser.name).contains('jira-administrators'))
+ enabled 
+#else
+ disabled 
+#end
+ />
+<div class="description">$i18n.getText("com.mesilat.week-load-gadget.deny-worklog-field")</div>
+#controlFooter ($action $fieldLayoutItem.fieldDescription $displayParameters.noHeader)

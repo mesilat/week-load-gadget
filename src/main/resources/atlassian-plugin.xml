@@ -5,6 +5,8 @@
         <vendor name="${project.organization.name}" url="${project.organization.url}" />
         <param name="plugin-icon">images/pluginIcon.png</param>
         <param name="plugin-logo">images/pluginLogo.png</param>
+        <param name="configure.url">/plugins/servlet/week-load-gadget-config</param>
+        <param name="atlassian-licensing-enabled">true</param>
         <application-version min="4.0"/>
     </plugin-info>
 
@@ -30,11 +32,60 @@
             <transformer key="jsI18n"/>
         </transformation>
 
-        <resource type="i18n"     name="i18n"          location="/i18n/gadget"/>
+        <resource type="i18n"     name="i18n"           location="/i18n/gadget"/>
         <!-- resource type="download" name="gadget.js"     location="/js/gadget.js"/ -->
-        <resource type="download" name="gadget.css"    location="/css/gadget.css"/>
-        <resource type="download" name="gadget.soy.js" location="/templates/gadget.soy"/>
+        <resource type="download" name="gadget.css"     location="/css/gadget.css"/>
+        <resource type="download" name="gadget.soy.js"  location="/templates/gadget.soy"/>
+        <resource type="download" name="denylog.soy.js" location="/templates/denylog.soy"/>
 
         <context>timesheet-report</context>
     </web-resource>
+
+    <web-resource key="report" name="report">
+        <transformation extension="soy">
+            <transformer key="soyTransformer"/>
+        </transformation>
+        <transformation extension="js">
+            <transformer key="jsI18n"/>
+        </transformation>
+
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+        <dependency>com.atlassian.auiplugin:dialog2</dependency>
+        <dependency>com.atlassian.auiplugin:aui-date-picker</dependency>
+
+        <resource type="download" name="report.css"    location="/css/report.css"/>
+        <resource type="download" name="report.js"     location="/js/report.js"/>
+        <resource type="download" name="report.soy.js" location="/templates/report.soy"/>
+
+        <context>atl.general</context>
+    </web-resource>
+
+    <web-resource key="config" name="config">
+        <resource type="download" name="config.js" location="/js/config.js"/>
+        <context>com.mesilat.week-load-gadget</context>
+    </web-resource>
+
+
+    <customfield-type key="deny-worklog-field" name="Deny Work Log" class="com.mesilat.worklog.LogDenyCustomField">
+        <description>The field prevents logging work to an issue if set</description>
+        <resource type="velocity" name="view" location="templates/plugins/fields/view/view-basictext.vm"/>
+        <resource type="velocity" name="edit" location="templates/denylog-field-edit.vm"/>
+        <resource type="velocity" name="xml"  location="templates/plugins/fields/xml/xml-basictext.vm"/>
+    </customfield-type>
+
+    <servlet-filter key="deny-worklog-filter" class="com.mesilat.worklog.LogDenyServletFilter" location="before-dispatch" weight="200">
+        <description>Checks issue for deny-worklog-field</description>
+        <url-pattern>/secure/CreateWorklog.jspa</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </servlet-filter>
+
+    <servlet key="config-servlet" class="com.mesilat.worklog.ConfigServlet" name="config-servlet">
+        <url-pattern>/week-load-gadget-config</url-pattern>
+    </servlet>
+
+    <web-item key="jira-menu-item" name="jira-menu-item" section="system.admin/globalsettings" weight="10" application="jira">
+        <label key="com.mesilat.week-load-gadget.menu" /> 
+        <link linkId="week-load-gadget-admin-link">/plugins/servlet/week-load-gadget-config</link> 
+    </web-item>
 </atlassian-plugin>

@@ -1,0 +1,66 @@
+<html>
+<head>
+    <title>Weekly Activity Gadget</title>
+    <meta name="decorator" content="atl.admin">
+    $webResourceManager.requireResourcesForContext("com.mesilat.week-load-gadget")
+</head>
+<body>
+
+<div class="aui-tabs horizontal-tabs">
+    <ul class="tabs-menu">
+        <li class="menu-item active-tab">
+            <a href="#com-mesilat-week-load-gadget-tab1">$i18n.getText("com.mesilat.week-load-gadget.config.panel1")</a>
+        </li>
+    </ul>
+
+
+    <div class="tabs-pane active-pane" id="com-mesilat-week-load-gadget-tab1">
+        <p>
+            <h1>$i18n.getText("com.mesilat.week-load-gadget.config.text")</h1>
+        </p>
+
+        <form class="aui" action="$baseurl/plugins/servlet/week-load-gadget-config" method="POST">
+            <div class="field-group">
+                <label for="max-backlog-period">$i18n.getText("com.mesilat.week-load-gadget.config.max-backlog-period.label")</label>
+                <input type="text" id="max-backlog-period" name="max-backlog-period" class="text"
+                    #if ($maxBacklogPeriod)
+                        value="$maxBacklogPeriod"
+                    #end
+                    #if (! $isLicensed)
+                        disabled="true"
+                    #end
+                    placeholder="$i18n.getText("com.mesilat.week-load-gadget.config.max-backlog-period.placeholder")">
+                <div class="description">$i18n.getText("com.mesilat.week-load-gadget.config.max-backlog-period.description")</div>
+            </div>
+
+            <div class="field-group">
+                <label for="max-log-per-day">$i18n.getText("com.mesilat.week-load-gadget.config.max-log-per-day.label")</label>
+                <input type="text" id="max-log-per-day" name="max-log-per-day" class="text"
+                    #if ($maxLogPerDay)
+                        value="$maxLogPerDay"
+                    #end
+                    #if (! $isLicensed)
+                        disabled="true"
+                    #end
+                    placeholder="$i18n.getText("com.mesilat.week-load-gadget.config.max-log-per-day.placeholder")">
+                <div class="description">$i18n.getText("com.mesilat.week-load-gadget.config.max-log-per-day.description")</div>
+            </div>
+
+            <div class="field-group">
+                <input type="submit" value="$i18n.getText("com.mesilat.general.submit")" class="button"
+                    #if (! $isLicensed)
+                        disabled="true"
+                    #end
+                />
+            </div>
+
+#if ($error)
+            <div class="aui-message aui-message-warning closeable fadeout">$error</div>
+#elseif ($success)
+            <div class="aui-message aui-message-success closeable fadeout">$success</div>
+#end
+        </form>
+    </div>
+</div>
+</body>
+</html>

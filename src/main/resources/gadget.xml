@@ -27,6 +27,7 @@
         <![CDATA[
         #requireResource("com.atlassian.jira.gadgets:common")
         #requireResource("com.atlassian.gadgets.publisher:ajs-gadgets")
+        #requireResource("com.atlassian.auiplugin:ajs")
         #requireResource("com.mesilat.week-load-gadget:resources")
         #includeResources()
         
@@ -110,15 +111,16 @@
                 total[0] = time2text(grandTotal);
 
                 var params = {
-                    week:    data.week,
-                    weeks:   data.weeks,
-                    days:    data.days,
-                    period:  data.period,
-                    user:    data.user,
-                    display: data.display,
-                    issues:  issues,
-                    total:   total,
-                    baseUrl: data.baseUrl
+                    week:       data.week,
+                    weeks:      data.weeks,
+                    days:       data.days,
+                    period:     data.period,
+                    user:       data.user,
+                    display:    data.display,
+                    issues:     issues,
+                    total:      total,
+                    baseUrl:    data.baseUrl,
+                    isLicensed: data.isLicensed
                 };
                 //console.log('com.mesilat.week-load-gadget', params);
                 var $html = $(Mesilat.TimeSheet.Templates.week(params));
@@ -150,21 +152,26 @@
 
                 $html.find('table.week-load-gadget-navigator a').each(function(){
                     $(this).on('click', function(e){
-                        var $a = $(e.target);
                         e.preventDefault();
-                        $.ajax({
-                            url: '/rest/week-load-gadget/1.0/week',
-                            type: 'GET',
-                            data: {week: $a.closest('td').attr('data:week')},
-                            dataType: 'json',
-                            success: function(data){
-                                gadget.getView().html(create(gadget,data));
-                                gadget.resize();
-                            },
-                            failure: function(jqxhr){
-                                console.log('com.mesilat.weel-load-gadget', jqxhr.responseText);
-                            }
-                        });
+
+                        var week = $(this).closest('td').attr('data:week');
+                        if ($(this).hasClass('com-mesilat-week-load-gadget-report')){
+                            window.parent.__weekly_activity_gadget__.report();
+                        } else {
+                            $.ajax({
+                                url: '/rest/week-load-gadget/1.0/week',
+                                type: 'GET',
+                                data: {week: week},
+                                dataType: 'json',
+                                success: function(data){
+                                    gadget.getView().html(create(gadget,data));
+                                    gadget.resize();
+                                },
+                                failure: function(jqxhr){
+                                    console.log('com.mesilat.weel-load-gadget', jqxhr.responseText);
+                                }
+                            });                    
+                        }
                     });
                 });
 

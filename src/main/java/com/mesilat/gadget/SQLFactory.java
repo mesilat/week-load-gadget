@@ -7,25 +7,52 @@ import org.ofbiz.core.entity.jdbc.dbtype.PostgresDatabaseType;
 import org.ofbiz.core.entity.jdbc.dbtype.Oracle10GDatabaseType;
 
 public class SQLFactory {
-    private static final SQLGenerator generator;
+    private static SQLGenerator GENERATOR;
+    private static final Object MONITOR = new Object();
 
     public static String getQueryOne(){
-        return generator.getQueryOne();
+        synchronized(MONITOR){
+            if (GENERATOR == null){
+                GENERATOR = createInstance();
+            }
+        }
+        return GENERATOR.getQueryOne();
     }
     public static String getQueryTwo(){
-        return generator.getQueryTwo();
+        synchronized(MONITOR){
+            if (GENERATOR == null){
+                GENERATOR = createInstance();
+            }
+        }
+        return GENERATOR.getQueryTwo();
+    }
+    public static String getQueryTotalWorklog(){
+        synchronized(MONITOR){
+            if (GENERATOR == null){
+                GENERATOR = createInstance();
+            }
+        }
+        return GENERATOR.getQueryTotalWorklog();
+    }
+    public static String getQueryReport(){
+        synchronized(MONITOR){
+            if (GENERATOR == null){
+                GENERATOR = createInstance();
+            }
+        }
+        return GENERATOR.getQueryReport();
     }
 
-    static {
+    private static SQLGenerator createInstance() {
         if (DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getDatabaseTypeFromJDBCConnection() instanceof MsSqlDatabaseType){
-            generator = new MSSQLGenerator(DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getSchemaName());
+            return new MSSQLGenerator(DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getSchemaName());
         } else if (DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getDatabaseTypeFromJDBCConnection() instanceof PostgresDatabaseType
                 || DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getDatabaseTypeFromJDBCConnection() instanceof Postgres73DatabaseType){
-            generator = new PostgreSQLGenerator();
+            return new PostgreSQLGenerator();
         } else if (DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getDatabaseTypeFromJDBCConnection() instanceof Oracle10GDatabaseType) {
-            generator = new OracleSQLGenerator();
+            return new OracleSQLGenerator();
         } else {
-            generator = new DefaultGenerator(); // MySQL, H2
+            return new DefaultGenerator(); // MySQL, H2
         }
     }
 }

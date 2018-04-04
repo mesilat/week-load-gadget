@@ -1,0 +1,8 @@
+form.aui input.com-mesilat-week-load-gadget-report-start,
+form.aui input.com-mesilat-week-load-gadget-report-end {
+    max-width:85px;
+}
+
+div.aui-inline-dialog.aui-datepicker-dialog {
+    z-index: 3001;
+}

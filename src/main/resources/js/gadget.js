@@ -118,10 +118,11 @@ define('com.mesilat/week-load-gadget', ['jquery'], function($){
             $(this).on('click', function(e){
                 var $a = $(e.target);
                 e.preventDefault();
+                var week = $a.closest('td').attr('data:week');
                 $.ajax({
                     url: '/rest/week-load-gadget/1.0/week',
                     type: 'GET',
-                    data: {week: $a.closest('td').attr('data:week')},
+                    data: {week: week},
                     dataType: 'json',
                     success: function(data){
                         gadget.getView().html(create(gadget,data));
@@ -130,7 +131,7 @@ define('com.mesilat/week-load-gadget', ['jquery'], function($){
                     failure: function(jqxhr){
                         console.log('com.mesilat.weel-load-gadget', jqxhr.responseText);
                     }
-                });
+                });                    
             });
         });
 

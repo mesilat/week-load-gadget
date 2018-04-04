@@ -1,0 +1,68 @@
+{namespace Mesilat.TimeSheet.Templates}
+
+/**
+ * Report dialog
+ */
+{template .reportDialog}
+<section id="com-mesilat-week-load-gadget-report-dialog" class="aui-dialog2 aui-dialog2-xlarge" role="dialog" data-aui-remove-on-hide="true">
+    <header class="aui-dialog2-header">
+        <h2 class="aui-dialog2-header-main">{getText('com.mesilat.week-load-gadget.report.caption')}</h2>
+        <div class="aui-dialog2-header-secondary">
+            <form class="aui" action="#">
+                <span>{getText('com.mesilat.week-load-gadget.report.period')}: </span>
+                <input class="text short-field aui-date-picker com-mesilat-week-load-gadget-report-start" type="date" />
+                <span> - </span>
+                <input class="text short-field aui-date-picker com-mesilat-week-load-gadget-report-end" type="date" />
+                <span> </span>
+                <button class="aui-button aui-button-primary">{getText('com.mesilat.week-load-gadget.report.submit')}</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="aui-dialog2-content">
+    </div>
+
+    <footer class="aui-dialog2-footer">
+        <div class="aui-dialog2-footer-actions">
+            <button class="aui-button aui-button-link close">Close</button>
+        </div>
+    </footer>
+</section>
+{/template}
+
+
+
+/**
+ * Table dialog
+ *
+ * @param report
+ * @param totalTimeWorked
+ */
+{template .reportTable}
+<table class="aui">
+    <thead>
+        <tr>
+            <th>Issue Key</th>
+            <th>Status</th>
+            <th>Summary</th>
+            <th>Work Time</th>
+        </tr>
+    </thead>
+    <tbody>
+    {foreach $rec in $report}
+        <tr>
+            <td>{$rec.issuekey}</td>
+            <td>{$rec.status.name}</td>
+            <td>{$rec.summary}</td>
+            <td>{$rec.timeWorked}</td>
+        </tr>
+    {/foreach}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="3">Total</th>
+            <th>{$totalTimeWorked}</th>
+        </tr>
+    </tfoot>
+</table>
+{/template}

@@ -76,6 +76,7 @@
     <servlet-filter key="deny-worklog-filter" class="com.mesilat.worklog.LogDenyServletFilter" location="before-dispatch" weight="200">
         <description>Checks issue for deny-worklog-field</description>
         <url-pattern>/secure/CreateWorklog.jspa</url-pattern>
+        <url-pattern>/secure/UpdateWorklog.jspa</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </servlet-filter>

@@ -69,7 +69,7 @@ public class LogDenyServletFilter implements Filter {
             UserProfile userProfile = userManager.getRemoteUser(req);
             
             try {
-                validateWorklog(request.getParameter("id"), req.getParameter("startDate"), req.getParameter("timeLogged"), userProfile, req.getLocale());
+                validateWorklog(request.getParameter("id"), req.getParameter("startDate"), req.getParameter("timeLogged"), userProfile, req.getLocale(), req.getParameter("worklogId"));
             } catch (ParseException | InvalidDurationException | SQLException ignore) {
                 //LOGGER.debug("Worklog failed", ex);
             } catch(IllegalArgumentException ex){
@@ -113,9 +113,26 @@ public class LogDenyServletFilter implements Filter {
     public void destroy() {
     }
 
-    private void validateWorklog(String issueId, String startDate, String duration, UserProfile userProfile, Locale locale
+    private void validateWorklog(
+        String issueId, String startDate, String duration, UserProfile userProfile, Locale locale, String worklogId
     ) throws ParseException, InvalidDurationException, SQLException {
+        // Check issue is no-logging
         I18nHelper i18n = ComponentAccessor.getJiraAuthenticationContext().getI18nHelper();
+        Issue issue = issueManager.getIssueObject(Long.parseLong(issueId));
+        if (issue != null) {
+            for (CustomField cf : customFieldManager.getCustomFieldObjects(issue)){
+                if (cf.getCustomFieldType() instanceof LogDenyCustomField){
+                    if ("true".equals(cf.getValue(issue))){
+                        throw new IllegalArgumentException(i18n.getText("com.mesilat.week-load-gadget.err.issue-nologging"));
+                    }
+                }
+            }
+        }        
+
+        if (userManager.isUserInGroup(userProfile.getUserKey(), "worklog_overdue_allow")){
+            return;
+        }
+
         PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
         Object maxBacklogPeriod = pluginSettings.get(Constants.PARAM_MAX_BACKLOG_PERIOD);
         Object maxLogPerDay = pluginSettings.get(Constants.PARAM_MAX_LOG_PER_DAY);
@@ -153,6 +170,7 @@ public class LogDenyServletFilter implements Filter {
             ){
                 ps.setString(1, userProfile.getUsername());
                 ps.setDate(2, new java.sql.Date(cal.getTimeInMillis()));
+                ps.setString(3, worklogId == null? "-1": worklogId);
                 Long total = null;
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
@@ -168,18 +186,6 @@ public class LogDenyServletFilter implements Filter {
                 }
             }
         }
-
-        // Check issue is no-logging
-        Issue issue = issueManager.getIssueObject(Long.parseLong(issueId));
-        if (issue != null) {
-            for (CustomField cf : customFieldManager.getCustomFieldObjects(issue)){
-                if (cf.getCustomFieldType() instanceof LogDenyCustomField){
-                    if ("true".equals(cf.getValue(issue))){
-                        throw new IllegalArgumentException(i18n.getText("com.mesilat.week-load-gadget.err.issue-nologging"));
-                    }
-                }
-            }
-        }        
     }
 
     @Autowired

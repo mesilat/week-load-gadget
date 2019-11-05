@@ -73,8 +73,18 @@ public class ReportResource {
         ObjectNode result = mapper.createObjectNode();
         long total = 0;
         try (Connection conn = getConnection()){
-            try (PreparedStatement ps = conn.prepareStatement(SQLFactory.getQueryReport())) {
+            String userKey = context.getLoggedInUser().getUsername();
+            try (PreparedStatement ps = conn.prepareStatement(SQLFactory.getQueryUserName())){
                 ps.setString(1, context.getLoggedInUser().getUsername());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()){
+                        userKey = rs.getString(1);
+                    }
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(SQLFactory.getQueryReport())) {
+                ps.setString(1, userKey);
                 ps.setDate(2, new java.sql.Date(_start.getTime()));
                 ps.setDate(3, new java.sql.Date(_end.getTime() + MSPERDAY));
                 try (ResultSet rs = ps.executeQuery()) {

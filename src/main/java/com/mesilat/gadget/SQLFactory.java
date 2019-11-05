@@ -42,6 +42,14 @@ public class SQLFactory {
         }
         return GENERATOR.getQueryReport();
     }
+    public static String getQueryUserName(){
+        synchronized(MONITOR){
+            if (GENERATOR == null){
+                GENERATOR = createInstance();
+            }
+        }
+        return GENERATOR.getQueryUserName();
+    }
 
     private static SQLGenerator createInstance() {
         if (DefaultOfBizConnectionFactory.getInstance().getDatasourceInfo().getDatabaseTypeFromJDBCConnection() instanceof MsSqlDatabaseType){

@@ -7,11 +7,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mesilat</groupId>
     <artifactId>week-load-gadget</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.8</version>
 
     <organization>
         <name>Mesilat Limited</name>
-        <url>http://www.mesilat.com/</url>
+        <url>https://mesilat.github.io/jira/week-load-gadget.html</url>
     </organization>
 
     <name>Weekly Activity Gadget</name>
@@ -98,17 +98,17 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time-local</artifactId>
             <version>2.9.4</version>
-        </dependency>
+        </dependency-->
 
-        <dependency>
+        <!--dependency>
             <groupId>org.joda</groupId>
             <artifactId>joda-convert</artifactId>
             <version>1.8.2</version>
-        </dependency>
+        </dependency-->
     </dependencies>
 
     <build>

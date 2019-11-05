@@ -23,13 +23,21 @@ table.week-load-gadget > tfoot > tr > td {
     font-weight: bold;
 }
 
-td.week-load-gadget-resolved {
+.gadget a.week-load-gadget-resolved {
     text-decoration: line-through;
 }
 
-td.week-load-gadget-code, td.week-load-gadget-name {
+td.week-load-gadget-task {
     padding-right: 4px;
     padding-left:  4px;
+}
+table.week-load-gadget-narrow td.week-load-gadget-task > div {
+    max-height: 42px;
+    overflow: hidden;
+    line-clamp: 3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 td.week-load-gadget-day {
@@ -83,7 +91,19 @@ table.week-load-gadget-navigator {
     text-align: center;
 }
 
-td.week-load-gadget-selected {
+
+
+div.week-load-gadget-tabs {
+    overflow: hidden;
+    height: 16px;
+}
+div.week-load-gadget-tabs > span {
+    display: inline-block;
+    float: right;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+span.week-load-tab-selected {
     font-weight: bold;
     background-color: #e0f0ff;
 }

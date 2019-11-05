@@ -10,5 +10,6 @@ public class MSSQLGenerator extends DefaultGenerator {
         sql2 = MessageFormat.format(sql2, schemaName);
         sql3 = MessageFormat.format(sql3, schemaName);
         sql4 = MessageFormat.format(sql4, schemaName);
+        sql5 = MessageFormat.format(sql5, schemaName);
     }
 }

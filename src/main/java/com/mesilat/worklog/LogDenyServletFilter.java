@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Scanned
 public class LogDenyServletFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger("com.mesilat.week-load-gadget");
-    
+
     @ComponentImport
     private final IssueManager issueManager;
     @ComponentImport
@@ -130,23 +130,32 @@ public class LogDenyServletFilter implements Filter {
         }        
 
         if (userManager.isUserInGroup(userProfile.getUserKey(), "worklog_overdue_allow")){
+            LOGGER.debug("User has 'worklog_overdue_allow', validation considered successful");
             return;
         }
 
         PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
         Object maxBacklogPeriod = pluginSettings.get(Constants.PARAM_MAX_BACKLOG_PERIOD);
         Object maxLogPerDay = pluginSettings.get(Constants.PARAM_MAX_LOG_PER_DAY);
+        LOGGER.debug(String.format("Max backlog period %s; max log per day %s", maxBacklogPeriod, maxLogPerDay));
 
         Calendar cal = Calendar.getInstance();
-        SimpleDateFormat fmt = new SimpleDateFormat(ComponentAccessor.getApplicationProperties().getDefaultBackedString(APKeys.JIRA_DATE_TIME_PICKER_JAVA_FORMAT));
+        SimpleDateFormat fmt = new SimpleDateFormat(
+            ComponentAccessor.getApplicationProperties().getDefaultBackedString(APKeys.JIRA_DATE_TIME_PICKER_JAVA_FORMAT),
+            ComponentAccessor.getLocaleManager().getLocaleFor(ComponentAccessor.getUserManager().getUserByKey(userProfile.getUserKey().getStringValue()))
+        );
+        LOGGER.debug(String.format("Format %s, startDate %s, locale %s", ComponentAccessor.getApplicationProperties().getDefaultBackedString(APKeys.JIRA_DATE_TIME_PICKER_JAVA_FORMAT), startDate, locale.toLanguageTag()));
         cal.setTime(fmt.parse(startDate));
+        LOGGER.debug("CP #2");
         cal.set(Calendar.HOUR, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        LOGGER.debug("CP #3");
 
         // Check log date
         if (maxBacklogPeriod != null){
+            LOGGER.debug("CP #4");
             Calendar treshold = Calendar.getInstance();
             treshold.setTimeInMillis(System.currentTimeMillis());
             treshold.set(Calendar.HOUR, 0);
@@ -157,32 +166,50 @@ public class LogDenyServletFilter implements Filter {
 
             if (cal.before(treshold)){
                 throw new IllegalArgumentException(i18n.getText("com.mesilat.week-load-gadget.err.invalid-date"));
+            } else {
+                LOGGER.debug(String.format("Log date %s is after treshold %s", cal.toString(), treshold.toString()));
             }
         }
+        LOGGER.debug("CP #5");
 
         // Check total log for date
-        if (maxLogPerDay != null){
+        if (maxLogPerDay == null){
+            LOGGER.debug("Max log per day is null, not checking log per day");
+        } else {
+            LOGGER.debug(String.format("Max log per day: %s", maxLogPerDay));
+
             JiraDurationUtils durationUtils = new JiraDurationUtils(timeTrackingConfiguration, durationFormatterProvider, eventPublisher);
             Long period = durationUtils.parseDuration(duration, locale);
+            //LOGGER.debug(String.format("Query log (SQL): %s", SQLFactory.getQueryTotalWorklog()));
 
-            try (Connection conn = DefaultOfBizConnectionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareCall(SQLFactory.getQueryTotalWorklog())
-            ){
-                ps.setString(1, userProfile.getUsername());
-                ps.setDate(2, new java.sql.Date(cal.getTimeInMillis()));
-                ps.setString(3, worklogId == null? "-1": worklogId);
-                Long total = null;
-                try (ResultSet rs = ps.executeQuery()){
-                    if (rs.next()){
-                        total = rs.getLong(1);
+            String userKey = userProfile.getUsername();
+            try (Connection conn = DefaultOfBizConnectionFactory.getInstance().getConnection()){
+                try (PreparedStatement ps = conn.prepareStatement(SQLFactory.getQueryUserName())){
+                    ps.setString(1, userProfile.getUsername());
+                    try (ResultSet rs = ps.executeQuery()){
+                        if (rs.next()){
+                            userKey = rs.getString(1);
+                        }
                     }
                 }
-                if (total == null){
-                    total = 0L;
-                }
+                try (PreparedStatement ps = conn.prepareCall(SQLFactory.getQueryTotalWorklog())){
+                    ps.setString(1, userKey);
+                    ps.setDate(2, new java.sql.Date(cal.getTimeInMillis()));
+                    ps.setString(3, worklogId == null? "-1": worklogId);
+                    Long total = null;
+                    try (ResultSet rs = ps.executeQuery()){
+                        if (rs.next()){
+                            total = rs.getLong(1);
+                        }
+                    }
+                    if (total == null){
+                        total = 0L;
+                    }
+                    LOGGER.debug(String.format("Log (max/total+period): %d: %d", Long.parseLong(maxLogPerDay.toString()) * 60 * 60, total + period));
 
-                if (Long.parseLong(maxLogPerDay.toString()) * 60 * 60 < total + period){
-                    throw new IllegalArgumentException(i18n.getText("com.mesilat.week-load-gadget.err.too-much"));
+                    if (Long.parseLong(maxLogPerDay.toString()) * 60 * 60 < total + period){
+                        throw new IllegalArgumentException(i18n.getText("com.mesilat.week-load-gadget.err.too-much"));
+                    }
                 }
             }
         }

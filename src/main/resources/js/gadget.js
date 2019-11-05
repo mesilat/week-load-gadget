@@ -1,10 +1,12 @@
-define('com.mesilat/week-load-gadget', ['jquery'], function($){
+define('com/mesilat/weekload/gadget', [ 'require' ], function(require) {
+    var $ = require('jquery');
+
     function time2text(time){
         if (time === 0)
             return '';
 
         var hours = Math.floor(time);
-/*
+    /*
         } else if (time - hours < 0.25){
             return '' + (hours > 0? hours: '');
         } else if (time - hours < 0.5){
@@ -14,12 +16,36 @@ define('com.mesilat/week-load-gadget', ['jquery'], function($){
         } else {
             return '' + (hours > 0? hours: '') + '&frac34;';
         }
-*/
+    */
         var minutes = Math.floor((time - hours)*60);
         return minutes < 10? '' + hours + ':0' + minutes: '' + hours + ':' + minutes;
+    };
+    function getSettings(){
+        if (window.localStorage){
+            if ('weekloadSettings' in window.localStorage){
+                return JSON.parse(window.localStorage.weekloadSettings);
+            }
+        } else if (window.__weekloadSettings) {
+            return window.__weekloadSettings;
+        }
+
+        return {
+            showWeekend: true,
+            narrow: false
+        };
     }
-    function create(gadget,data){
-        var issues = {};
+    function saveSettings(settings){
+        if (window.localStorage){
+            window.localStorage.weekloadSettings = JSON.stringify(settings);
+        } else {
+            window.__weekloadSettings = settings;
+        }
+    }
+
+    function create(gadget, data, _window){
+        var settings = getSettings(),
+            issues = {};
+
         data.issues.forEach(function(rec){
             if (!(rec.id in issues)){
                 issues[rec.id] = {
@@ -75,18 +101,34 @@ define('com.mesilat/week-load-gadget', ['jquery'], function($){
         }
         total[0] = time2text(grandTotal);
 
+        var weeks = [];
+        _.keys(data.weeks).forEach(function(key){
+            weeks.push({
+                key: key,
+                text: data.weeks[key]
+            });
+        });
+        weeks.sort(function(a,b){
+            return b.key.localeCompare(a.key);
+        });
+        
         var params = {
-            week:    data.week,
-            weeks:   data.weeks,
-            days:    data.days,
-            period:  data.period,
-            user:    data.user,
-            display: data.display,
-            issues:  issues,
-            total:   total,
-            baseUrl: data.baseUrl
+            week:       data.week,
+            weeks:      weeks,
+            days:       data.days,
+            //period:     data.period,
+            user:       data.user,
+            //display:    data.display,
+            issues:     issues,
+            total:      total,
+            baseUrl:    data.baseUrl,
+            isLicensed: data.isLicensed,
+            showWeekend:!!settings.showWeekend,
+            narrow:     !!settings.narrow
         };
-        //console.log('com.mesilat.week-load-gadget', params);
+
+        //console.log('com/mesilat/weekload/gadget create', settings, params);
+
         var $html = $(Mesilat.TimeSheet.Templates.week(params));
         $html.find('td.week-load-gadget-day').each(function(){
             var $td = $(this);
@@ -113,32 +155,66 @@ define('com.mesilat/week-load-gadget', ['jquery'], function($){
                 }
             });
         });
-        
-        $html.find('table.week-load-gadget-navigator a').each(function(){
+
+        $html.find('div.week-load-gadget-tabs a:not(.com-mesilat-week-load-gadget-menu)').each(function(){
             $(this).on('click', function(e){
-                var $a = $(e.target);
                 e.preventDefault();
-                var week = $a.closest('td').attr('data:week');
+                var week = $(this).closest('span').attr('data:week'),
+                    tabs = 0;
+                $(this).closest('div.week-load-gadget-tabs').find('span').each(function(){
+                    var $span = $(this);
+                    if (this.hasAttribute('data:week') && $span.position().top === 0){
+                        tabs++;
+                    }
+                });
                 $.ajax({
                     url: '/rest/week-load-gadget/1.0/week',
                     type: 'GET',
-                    data: {week: week},
+                    data: {
+                        week: week,
+                        tabs: tabs
+                    },
                     dataType: 'json',
                     success: function(data){
-                        gadget.getView().html(create(gadget,data));
+                        gadget.getView().html(create(gadget, data, _window));
                         gadget.resize();
                     },
                     failure: function(jqxhr){
-                        console.log('com.mesilat.weel-load-gadget', jqxhr.responseText);
+                        console.log('com/mesilat/weekload/gadget', jqxhr.responseText);
                     }
                 });                    
+            });
+        });
+
+        $html.find('#com-mesilat-weekload-show-report').on('click', function(e){
+            e.preventDefault();
+            _window.__weekly_activity_gadget__.report();
+        });
+
+        $html.find('#com-mesilat-weekload-show-weekend').on('click', function(e){
+            setTimeout(function(){
+                settings.showWeekend = $(e.target).attr('aria-checked') === 'true';
+                saveSettings(settings);
+                $(e.target).closest('aui-dropdown-menu').remove();
+                gadget.getView().html(create(gadget, data, _window));
+                gadget.resize();
+            });
+        });
+
+        $html.find('#com-mesilat-weekload-show-narrow').on('click', function(e){
+            setTimeout(function(){
+                settings.narrow = $(e.target).attr('aria-checked') === 'true';
+                saveSettings(settings);
+                $(e.target).closest('aui-dropdown-menu').remove();
+                gadget.getView().html(create(gadget, data, _window));
+                gadget.resize();
             });
         });
 
         return $html;
     }
 
-    return {
-        create: create
-    };
+    return create;
 });
+
+AJS.namespace("weekLoadGadget", null, require("com/mesilat/weekload/gadget"));

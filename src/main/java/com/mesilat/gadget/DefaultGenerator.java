@@ -7,6 +7,7 @@ public class DefaultGenerator implements SQLGenerator {
     protected String sql2;
     protected String sql3;
     protected String sql4;
+    protected String sql5;
 
     @Override
     public String getQueryOne() {
@@ -24,6 +25,10 @@ public class DefaultGenerator implements SQLGenerator {
     public String getQueryReport() {
         return sql4;
     }
+    @Override
+    public String getQueryUserName() {
+        return sql5;
+    }
 
     public DefaultGenerator(){
         this("default");
@@ -34,5 +39,6 @@ public class DefaultGenerator implements SQLGenerator {
         sql2 = bundle.getString("com.mesilat.week-load.sql2");
         sql3 = bundle.getString("com.mesilat.week-load.sql3");
         sql4 = bundle.getString("com.mesilat.week-load.sql4");
+        sql5 = bundle.getString("com.mesilat.week-load.sql5");
     }
 }

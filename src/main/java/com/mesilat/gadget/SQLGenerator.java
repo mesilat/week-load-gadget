@@ -5,4 +5,5 @@ public interface SQLGenerator {
     String getQueryTwo();
     String getQueryTotalWorklog();
     String getQueryReport();
+    String getQueryUserName();
 }

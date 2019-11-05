@@ -1,4 +1,6 @@
 <messagebundle>
     <msg name="gadget.title">Weekly Activity Gadget</msg>
     <msg name="gadget.description">Use this gadget to monitor your weekly workload</msg>
+    <msg name="gadget.showWeekend.label">Show Weekend</msg>
+    <msg name="gadget.showWeekend.desc">Uncheck this checkbox to hide Saturday and Sunday</msg>
 </messagebundle>

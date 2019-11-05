@@ -5,51 +5,53 @@
  * @param week
  * @param weeks
  * @param days
- * @param period
  * @param user
- * @param display
  * @param issues
  * @param total
  * @param baseUrl
  * @param isLicensed
+ * @param showWeekend
+ * @param narrow
  */
 {template .week}
 <div class="com-mesilat-main">
-<p>
-<table class="week-load-gadget-navigator">
-<tr>
-    {foreach $w in keys($weeks)}
-        <td {if $w == $week}class="week-load-gadget-selected"{/if} data:week="{$w}">
-            <a href="#">{$weeks[$w]}</a>
-        </td>
+<div class="week-load-gadget-tabs">
+    <span>
+        <a id="com-mesilat-weekload-menu-trigger" class="com-mesilat-week-load-gadget-menu aui-dropdown2-trigger" href="javascript:;" aria-controls="com-mesilat-weekload-menu">
+            <span class="aui-icon aui-icon-small aui-iconfont-appswitcher">{getText('com.mesilat.week-load-gadget.gadget.menu')}</span>
+        </a>
+        <aui-dropdown-menu id="com-mesilat-weekload-menu">
+            <aui-section>
+                <aui-item-link id="com-mesilat-weekload-show-report" {if not $isLicensed}disabled{/if} href="javascript:;">{getText('com.mesilat.week-load-gadget.gadget.menu.report')}</aui-item-link>
+            </aui-section>
+            <aui-section>
+                <aui-item-checkbox id="com-mesilat-weekload-show-weekend" interactive {if $showWeekend}checked{/if}>{getText('com.mesilat.week-load-gadget.gadget.menu.weekend')}</aui-item-checkbox>
+                <aui-item-checkbox id="com-mesilat-weekload-show-narrow" interactive {if $narrow}checked{/if}>{getText('com.mesilat.week-load-gadget.gadget.menu.narrow')}</aui-item-checkbox>
+            </aui-section>
+        </aui-dropdown-menu>
+    </span>
+    {foreach $w in $weeks}
+        <span {if $w.key == $week}class="week-load-tab-selected"{/if} data:week="{$w.key}">
+            <a href="javascript:;">{$w.text}</a>
+        </span>
     {/foreach}
-    {if $isLicensed}
-        <td>
-            <a class="com-mesilat-week-load-gadget-report" href="#">
-                <span class="aui-icon aui-icon-small aui-iconfont-calendar">{getText('com.mesilat.week-load-gadget.period')}</span>
-            </a>
-        </td>
-    {/if}
-</tr>
-</table>
-</p>
-<p>
-    <h2>{$display}: {$period}</h2>
-</p>
-<p>
-<table class="week-load-gadget" data:week="{$week}" data:user="{$user.name}">
+</div>
+<table class="week-load-gadget {if $narrow}week-load-gadget-narrow{/if}" data:week="{$week}" data:user="{$user.name}">
 <thead>
     <tr>
-        <th rowspan="2">{getText('com.mesilat.week-load-gadget.pkey')}</th>
         <th rowspan="2" style="width:100%">{getText('com.mesilat.week-load-gadget.summary')}</th>
         {foreach $day in $days}
-            <th>{$day.dayName}</th>
+            {if $showWeekend or not $day.weekend}
+                <th>{$day.dayName}</th>
+            {/if}
         {/foreach}
         <th rowspan="2">{getText('com.mesilat.week-load-gadget.logged')}</th>
     </tr>
     <tr>
         {foreach $day in $days}
-            <th>{$day.date}</th>
+            {if $showWeekend or not $day.weekend}
+                <th>{$day.date}</th>
+            {/if}
         {/foreach}
     </tr>
 </thead>
@@ -58,26 +60,29 @@
         {param issues:  $issues/}
         {param days:    $days/}
         {param baseUrl: $baseUrl/}
+        {param showWeekend: $showWeekend/}
     {/call}
 </tbody>
 <tfoot>
     <tr>
-        <td>&nbsp;</td>
         <td style="width:100%">{getText('com.mesilat.week-load-gadget.daytotal')}</td>
         {foreach $day in $days}
-            <td class="week-load-gadget-total"><div>
-            {if $total[$day.day]}
-                {$total[$day.day]|noAutoescape}
-            {else}
-                &nbsp;
+            {if $showWeekend or not $day.weekend}
+            <td class="week-load-gadget-total">
+                <div>
+                {if $total[$day.day]}
+                    {$total[$day.day]|noAutoescape}
+                {else}
+                    &nbsp;
+                {/if}
+                </div>
+            </td>
             {/if}
-            </div></td>
         {/foreach}
         <td>{$total[0]}</td>
     </tr>
 </tfoot>
 </table>
-</p>
 </div>
 {/template}
 
@@ -87,6 +92,7 @@
  * @param issues
  * @param days
  * @param baseUrl
+ * @param showWeekend
  */
 {template .data}
 {foreach $key in keys($issues)}
@@ -94,6 +100,7 @@
         {param rec:     $issues[$key]/}
         {param days:    $days/}
         {param baseUrl: $baseUrl/}
+        {param showWeekend: $showWeekend/}
     {/call}
 {/foreach}
 {/template}
@@ -104,20 +111,24 @@
  * @param rec
  * @param days
  * @param baseUrl
+ * @param showWeekend
  */
 {template .rec}
 <tr>
-    <td class="week-load-gadget-code{if $rec.resolved} week-load-gadget-resolved{/if}" nowrap>
-        <div><a target="_blank" href="{$baseUrl}/browse/{$rec.issuekey}">{$rec.issuekey}</a></div>
-    </td>
-    <td class="week-load-gadget-name">
-        <div>{$rec.summary}</div>
+    <td class="week-load-gadget-task">
+        <div>
+            <a target="_blank" href="{$baseUrl}/browse/{$rec.issuekey}"
+                {if $rec.resolved} class="week-load-gadget-resolved"{/if}
+            title="{$rec.summary}">{$rec.issuekey}</a> {$rec.summary}
+        </div>
     </td>
     {foreach $day in $days}
-        {call .day}
-            {param rec: $rec/}
-            {param day: $day/}
-        {/call}
+        {if $showWeekend or not $day.weekend}
+            {call .day}
+                {param rec: $rec/}
+                {param day: $day/}
+            {/call}
+        {/if}
     {/foreach}
     {if $rec.total}
         <td class="week-load-gadget-total"><div>{$rec.total|noAutoescape}</div></td>
